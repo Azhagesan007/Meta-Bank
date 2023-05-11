@@ -1,0 +1,1 @@
+Welcome to the Bank API documentation. This API allows you to perform various banking operations such as login, balance inquiry, fund transfer, PIN change, cash withdrawal, cash deposit, transaction statement retrieval, and cash check. The API is built using Flask, a Python web framework.
