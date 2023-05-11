@@ -26,6 +26,7 @@ Endpoints:
       
       
   Balance
+  
     URL: /balance
     Method: GET
     Description: Retrieves the account balance for the authenticated user.
@@ -39,6 +40,7 @@ Endpoints:
       
       
   Request OTP for PIN Change
+  
     URL: /change_pin/req_otp
     Method: GET
     Description: Requests an OTP (One-Time Password) for changing the PIN.
@@ -53,6 +55,7 @@ Endpoints:
 
 
   Send Money
+  
     URL: /sendmoney
     Method: GET
     Description: Sends money from the authenticated user's account to another account.
@@ -68,6 +71,7 @@ Endpoints:
 
 
   Verify PIN Change
+  
     URL: /change_pin
     Method: GET
     Description: Verifies the OTP and changes the PIN for the authenticated user.
@@ -83,6 +87,7 @@ Endpoints:
 
 
   Withdraw Money
+  
     URL: /withdraw
     Method: GET
     Description: Withdraws money from the authenticated user's account.
@@ -97,6 +102,7 @@ Endpoints:
 
 
 Deposit Money
+
   URL: /deposit
   Method: GET
   Description: Deposits
