@@ -105,4 +105,38 @@ Deposit Money
 
   URL: /deposit
   Method: GET
-  Description: Deposits
+  Description: Deposits a specified amount into the user's account
+  Parameters:
+    CustomerId: The unique identifier of the customer's account (required).
+    Amount: The amount to be deposited (required).
+  Response:
+      login: Login status (True/False)
+      data: Deposit transaction details or error message
+      Code: Response code indicating the result
+      
+      
+Statement
+  
+    URL: /statement
+    Method: GET
+    Description: Retrieves the transaction statement for the specified customer account.
+    Parameters:
+      CustomerId: The customer ID (query parameter)
+      Pin: The PIN for authentication (query parameter)
+    Response:
+      login: Login status (True/False)
+      data: List of JSON data containing statemnt or error message
+      Code: Response code indicating the result
+      
+  Cash Enquery
+  
+    URL: /cash
+    Method: GET
+    Description: Checks the available cash balance in the customer's wallet.
+    Parameters:
+      CustomerId: The customer ID (query parameter)
+      Pin: The PIN for authentication (query parameter)
+    Response:
+      login: Login status (True/False)
+      data: Wallet balance or error message
+      Code: Response code indicating the result
