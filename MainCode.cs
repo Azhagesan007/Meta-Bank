@@ -661,7 +661,7 @@ public class MainCode : MonoBehaviour
 
     IEnumerator loginrequest(string data, string pin)
     {
-        string url = "http://azhagesan.pythonanywhere.com/login?CustomerId=" + data + "&Pin=" + pin;
+        string url = "http://domain url/login?CustomerId=" + data + "&Pin=" + pin;
         UnityWebRequest request = UnityWebRequest.Get(url);
         yield return request.SendWebRequest();
 
@@ -715,7 +715,7 @@ public class MainCode : MonoBehaviour
     }
     IEnumerator GetBalance(string data, string pin)
     {
-        string url = "http://azhagesan.pythonanywhere.com/balance?CustomerId=" + data + "&Pin=" + pin;
+        string url = "http://domain url/balance?CustomerId=" + data + "&Pin=" + pin;
         Debug.Log(url);
         UnityWebRequest www = UnityWebRequest.Get(url);
         yield return www.SendWebRequest();
@@ -786,7 +786,7 @@ public class MainCode : MonoBehaviour
 
     IEnumerator SendMoney(string receiverAccount, string pin, string amount, string customerId)
     {
-        string url = "http://azhagesan.pythonanywhere.com/sendmoney?ReceiverAccount=" + receiverAccount
+        string url = "http://domain url/sendmoney?ReceiverAccount=" + receiverAccount
                     + "&pin=" + pin
                     + "&amount=" + amount
                     + "&CustomerId=" + customerId;
@@ -841,7 +841,7 @@ public class MainCode : MonoBehaviour
 
     IEnumerator GetStatement(string customerId, string pin)
     {
-        string url = "http://azhagesan.pythonanywhere.com/statement?CustomerId=" + customerId
+        string url = "http://domain url/statement?CustomerId=" + customerId
                     + "&Pin=" + pin;
 
         UnityWebRequest request = UnityWebRequest.Get(url);
@@ -912,7 +912,7 @@ public class MainCode : MonoBehaviour
 
     IEnumerator RequestOTP(string customerId, string pin)
     {
-        string url = "http://azhagesan.pythonanywhere.com/change_pin/req_otp?CustomerId=" + customerId + "&Pin=" + pin;
+        string url = "http://domain url/change_pin/req_otp?CustomerId=" + customerId + "&Pin=" + pin;
         Debug.Log(url);
         using (UnityWebRequest webRequest = UnityWebRequest.Get(url))
         {
@@ -953,7 +953,7 @@ public class MainCode : MonoBehaviour
 
     IEnumerator VerifyChangePin(string otp, string id, string newPin)
     {
-        string url = "http://azhagesan.pythonanywhere.com/change_pin?OTP=" + otp + "&ID=" + id + "&PIN=" + newPin;
+        string url = "http://domain url/change_pin?OTP=" + otp + "&ID=" + id + "&PIN=" + newPin;
 
         using (UnityWebRequest webRequest = UnityWebRequest.Get(url))
         {
@@ -984,7 +984,7 @@ public class MainCode : MonoBehaviour
 
     IEnumerator DepositMoney(string customerId, string amount)
     {
-        string url = "http://azhagesan.pythonanywhere.com/deposit?CustomerId=" + customerId
+        string url = "http://domain url/deposit?CustomerId=" + customerId
                     + "&Amount=" + amount;
 
         UnityWebRequest request = UnityWebRequest.Get(url);
@@ -1033,7 +1033,7 @@ public class MainCode : MonoBehaviour
 
     IEnumerator WithdrawMoney(string customerId, string amount)
     {
-        string url = "http://azhagesan.pythonanywhere.com/withdraw?CustomerId=" + customerId
+        string url = "http://domain url/withdraw?CustomerId=" + customerId
                     + "&Amount=" + amount;
         
 
@@ -1160,7 +1160,7 @@ public class MainCode : MonoBehaviour
 
     IEnumerator CashReq(string customerId, string pin)
     {
-        string url = "http://azhagesan.pythonanywhere.com/cash?CustomerId=" + customerId
+        string url = "http://domain url/cash?CustomerId=" + customerId
                     + "&Pin=" + pin;
 
         UnityWebRequest request = UnityWebRequest.Get(url);
