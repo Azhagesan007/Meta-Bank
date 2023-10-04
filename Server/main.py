@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, make_response
+from flask import Flask, jsonify, request, make_response, render_template, url_for
 from account import Status
 from money import Money
 
@@ -7,6 +7,8 @@ status = Status()
 
 app = Flask(__name__)
 
+my_email = "azhagesan807@gmail.com"
+passwords = "xyujmdlgnquguoou"
 
 @app.route("/", methods=["GET"])
 def home():
@@ -126,7 +128,8 @@ def otp_req_change_pin():
 def send():
     try:
         access = money.send_money(receiver_account=request.args.get("ReceiverAccount"),
-                                 pin=request.args.get("pin"), amount=request.args.get("amount"), customer=request.args.get("CustomerId"))
+                                  pin=request.args.get("pin"), amount=request.args.get("amount"),
+                                  customer=request.args.get("CustomerId"))
         if access is None:
             return_data = {
                 "login": False,
@@ -205,7 +208,7 @@ def withdraw():
         else:
             return_data = {
                 "login": True,
-                "data": access, #Returns list of JSON
+                "data": access,  # Returns list of JSON
                 "Code": 2
             }
             return make_response(jsonify(return_data), 200)
@@ -233,7 +236,7 @@ def deposit():
         else:
             return_data = {
                 "login": True,
-                "data": access, #Returns list of JSON
+                "data": access,  # Returns list of JSON
                 "Code": 2
             }
             return make_response(jsonify(return_data), 200)
@@ -245,8 +248,6 @@ def deposit():
             "Code": 400
         }
         return make_response(jsonify(return_data), 400)
-
-
 
 
 @app.route("/statement")
@@ -284,6 +285,7 @@ def get_trans():
         }
         return make_response(jsonify(return_data), 400)
 
+
 @app.route("/cash", methods=["GET"])
 def cash():
     try:
@@ -320,5 +322,48 @@ def cash():
         return make_response(jsonify(return_data), 400)
 
 
+@app.route("/newuser/create")
+def newuser():
+    return render_template("new_user.html")
 
+
+@app.route("/newuser/verify", methods=["POST"])
+def verifyuser():
+    data = request.form.get("date").split("-")
+    date = ""
+    for i in data:
+        date = i + '/' + date
+    date = date[:len(date) - 1]
+    print(date)
+    email = request.form.get("email")
+    print(email)
+    data = status.newUser(name=request.form.get("name"), number=request.form.get("number"),
+                          email=email,
+                          dob=date, father=request.form.get("father"))
+    return render_template("verify.html", data=data, results="")
+
+@app.route("/newuser/verify/<string:data>", methods=["POST"])
+def check_verification(data):
+    email_otp = request.form.get("email")
+    mobile_otp = request.form.get("mobile")
+    result = status.verify_user(data=data, email_otp=email_otp,mobile_otp=mobile_otp)
+    if result:
+        urls = "http://127.0.0.1:5000/newuser/verify/createpassword/"+data
+        status.complete_account_create(data, url=urls)
+        return "<h1>Created account</h1>"
+    else:
+        return render_template("verify.html", data=data, results="Incorrect OTP")
+
+
+@app.route("/newuser/verify/createpassword/<string:data>", methods=["POST","GET"])
+def create_password(data):
+    if request.method == "GET":
+        return render_template("password.html", data=data)
+    else:
+        passcode = request.form.get("password")
+        next = status.newuser_password(data=data, passcode=passcode)
+        if next:
+            return "<h1>Password set succesfull</h1>"
+        else:
+            return"None"
 
