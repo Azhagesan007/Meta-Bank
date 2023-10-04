@@ -1,3 +1,6 @@
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from twilio.rest import Client
@@ -5,10 +8,10 @@ import random
 import datetime
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:(DATABASE_LOCATION)"
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///jorgon.db"
 db = SQLAlchemy(app)
-
-
+my_email = "azhagesan807@gmail.com"
+passwords = "xyujmdlgnquguoou"
 
 class Bank(db.Model):
     account = db.Column(db.Integer, unique=True, nullable=False, primary_key=True)
@@ -31,8 +34,28 @@ class OTP(db.Model):
     identification = db.Column(db.Integer, unique=False, nullable=False)
     time = db.Column(db.Integer, unique=False, nullable=False)
 
+class Verification(db.Model):
+    id = db.Column(db.Integer, unique=True, nullable=False, primary_key=True)
+    identification = db.Column(db.String, unique=False, nullable=False)
+    email_OTP = db.Column(db.Integer, unique=False, nullable=False)
+    mobile_OTP = db.Column(db.Integer, unique=False, nullable=False)
+    account = db.Column(db.Integer, unique=True, nullable=False)
 
+def accountno(mobile):
+    with app.app_context():
+        query = Bank.query.all()
+        part_query = Bank.query.filter_by(mobile=mobile).all()
 
+        for j in part_query:
+            if j.CustomerId == 0:
+                db.session.delete(j)
+                db.session.commit()
+        customerid = [i.account for i in query]
+    while True:
+        account_no = random.randint(9500000000, 10000000000)
+        if account_no not in customerid:
+            break
+    return account_no
 
 class Status:
     """Gives the status of the account"""
@@ -40,8 +63,8 @@ class Status:
         self.bank = Bank()
         self.otp = OTP()
         self.selected_account = None
-        self.account_sid = "Your_Accound_Sid"
-        self.auth_token = "Your_Authentication_token"
+        self.account_sid = "AC5587b4f57348f5e0472afaddfc3d3a34"
+        self.auth_token = "6af3bbb1b2fe5dc1d861fa399b405433"
         self.client = Client(self.account_sid, self.auth_token)
 
 
@@ -154,5 +177,78 @@ class Status:
             with app.app_context():
                 result = Bank.query.filter_by(CustomerId=self.selected_account.CustomerId).first()
             return result.cash
+
+    def newUser(self, name, father, dob, number, email):
+        """Creates New User"""
+        account = accountno(mobile=number)
+        new_user = Bank(name=name, balance=0, Father=father, mobile=number, email=email, cash=0, DOB=dob,
+                        account=account, CustomerId=0, password=0)
+        newOne = datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
+        mobile_otp = random.randint(1000, 9999)
+        email_otp = random.randint(1000, 9999)
+        self.message_otp(otp=mobile_otp, number=number)
+        with smtplib.SMTP("smtp.gmail.com", 587) as sent_mail:
+            sent_mail.starttls()
+            sent_mail.login(user=my_email, password=passwords)
+            response = sent_mail.sendmail(from_addr=my_email, to_addrs=email,
+                               msg=f"Subject:Your OTP for verification.\n\n\n Your OTP for verification is {email_otp}. "
+                                   f"Do not share with anyone")
+            print(response.values())
+            sent_mail.close()
+
+        new_record = Verification(account=account, identification=newOne, mobile_OTP=mobile_otp, email_OTP=email_otp)
+        with app.app_context():
+            db.session.add(new_user)
+            db.session.add(new_record)
+            db.session.commit()
+        return newOne
+
+    def verify_user(self, data, mobile_otp, email_otp):
+        """Verifies the new user"""
+        with app.app_context():
+            query = Verification.query.filter_by(identification=data).all()
+            mobile_otp_list = [i.mobile_OTP for i in query]
+            email_otp_list = [i.email_OTP for i in query]
+
+            if int(mobile_otp) in mobile_otp_list and int(email_otp) in email_otp_list:
+                return True
+            else:
+                return False
+
+
+    def complete_account_create(self, identity,url):
+        """Fills the leftover fields"""
+        with app.app_context():
+            query = Verification.query.filter_by(identification=identity).first()
+            account_query = Bank.query.filter_by(account=query.account).first()
+            print(account_query)
+            email = account_query.email
+            a = random.randint(1000, 9999)
+            account_query.CustomerId = a
+            db.session.commit()
+            msg = MIMEMultipart()
+            msg['Subject'] = 'Subject:Your Account Credential - Team JORGON.'
+            msg.attach(MIMEText(f"Welcome to jorgon\n"
+                                       f"Your Customer ID: {a}\nReset your password by clicking this link  <a href= {url}> Click here</a>", 'html'))
+            with smtplib.SMTP("smtp.gmail.com", 587) as sent_mail:
+                sent_mail.starttls()
+                sent_mail.login(user=my_email, password=passwords)
+                sent_mail.sendmail(from_addr=my_email, to_addrs=email,
+                                   msg=msg.as_string())
+                sent_mail.close()
+
+    def newuser_password(self,data, passcode):
+        """Sets new password for the user"""
+        with app.app_context():
+            query = Verification.query.filter_by(identification=data).first()
+            account_query = Bank.query.filter_by(account=query.account).first()
+            account_query.password = int(passcode)
+            db.session.delete(query)
+            db.session.commit()
+            return True
+
+
+
+
 
 
