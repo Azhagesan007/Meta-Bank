@@ -5,7 +5,7 @@ from account import Status
 import datetime
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:(DATABASE_LOCATION)"
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///jorgon.db"
 db = SQLAlchemy(app)
 
 
