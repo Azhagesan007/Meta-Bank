@@ -1,52 +1,47 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using TMPro;
-using Unity.VisualScripting;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
-using System.IO;
-using JetBrains.Annotations;
-using System.Net.NetworkInformation;
-using UnityEditor.PackageManager.Requests;
-using System.Transactions;
-using System.Reflection;
+using Unity.Netcode;
+using UnityEngine.InputSystem.Composites;
+using Unity.VisualScripting;
 
-public class MainCode : MonoBehaviour
+public class MainCode : NetworkBehaviour
 {
-    public GameObject screen;
-    public GameObject bank;
-    public GameObject userlabel;
-    public GameObject pinlabel;
-    public GameObject loginbtn;
-    public GameObject atmscreen;
-    public GameObject mainmenu;
-    public GameObject balance_screen;
-    public GameObject sentmoney;
-    public GameObject sendmoneyout;
-    public GameObject statement;
-    public GameObject pinchangescreen;
-    public GameObject door1;
-    public GameObject door2;
+
+    private string DOMAIN_URL = "http://azhagesan.pythonanywhere.com";
+    //public GameObject OtherService;
+    //public GameObject EnterBank;
+    //public GameObject screen;
+
     public GameObject display;
-    public GameObject gamecanvas;
-    public GameObject OtherService;
-    public GameObject withdrawScreen;
-    public GameObject EnterBank;
-    public Text depamount;
-    public Text mainmenulabel;
-    public Text loginid;
-    public Text pinnumber;
-    public Text balance_display_text;
-    public Text sentaccdisplay_text;
-    public Text sentmoneydisplay_text;
-    public Text sentstatusdisplay_text;
-    public Text statementtext;
-    public Text OTP;
-    public Text pinchangetext;
-    public Text cashtext;
-    public Dropdown DepOrWith;
+    private GameObject loginscreen;
+    private GameObject mainmenu;
+    private GameObject balance_screen;
+    private GameObject sentmoney;
+    private GameObject sendmoneyout;
+    private GameObject statement;
+    private GameObject pinchangescreen;
+    //public GameObject door1;
+    //public GameObject door2;
+    private GameObject gamecanvas;
+    private GameObject keypadInput;
+    private GameObject output;
+
+    private GameObject withdrawScreen;
+    private Text depamount;
+    private Text loginid;
+    private Text pinnumber;
+    private Text balance_display_text;
+    private Text sentaccdisplay_text;
+    private Text sentmoneydisplay_text;
+    private Text sentstatusdisplay_text;
+    private Text statementtext;
+    private Text OTP;
+    private Text pinchangetext;
+    private Text cashtext;
+    private Dropdown DepOrWith;
     private string userid;
     private int flag = 0;
     private string response_data;
@@ -61,35 +56,34 @@ public class MainCode : MonoBehaviour
     private bool loginstay;
 
 
-    //Player Animation
-    public Animator playerAnim;
-    public Rigidbody playerRigid;
+    private Animator playerAnim;
+    //public Rigidbody playerRigid;
 
-    public float w_speed, wb_speed, olw_speed, rn_speed, ro_speed;
-    public bool walking;
+    //public float w_speed, wb_speed, olw_speed, rn_speed, ro_speed;
+    //public bool walking;
 
-    public Transform playerTrans;
-    public Transform playerbot;
+    private Transform playerTrans;
+    private Transform playerbot;
 
 
-    public Transform receptiontrans;
-    public Transform logintrans;
-    public Transform withdrawtrans;
-    public Transform statementtrans;
-    public Transform balancetrans;
-    public Transform transfertrans;
-    public Transform pintrans;
+    private Transform receptiontrans;
+    private Transform logintrans;
+    private Transform withdrawtrans;
+    private Transform statementtrans;
+    private Transform balancetrans;
+    private Transform transfertrans;
+    private Transform pintrans;
 
-    public Transform loginbot;
-    public Transform receptbot;
-    public Transform transferbot;
-    public Transform withdrawbot;
-    public Transform statementbot;
-    public Transform balancebot;
-    public Transform pinbot;
-    public Transform restpoint;
+    private Transform loginbot;
+    private Transform receptbot;
+    private Transform transferbot;
+    private Transform withdrawbot;
+    private Transform statementbot;
+    private Transform balancebot;
+    private Transform pinbot;
+    private Transform restpoint;
 
-    public Transform displaybot;
+    //public Transform displaybot;
 
     private float speed = 5;
 
@@ -102,21 +96,182 @@ public class MainCode : MonoBehaviour
     private bool pin;
     private bool rest;
     private bool exit;
+
+    
+    //For buttons
+    private Button one_btn;
+    private Button two_btn;
+    private Button three_btn;
+    private Button four_btn;
+    private Button five_btn;
+    private Button six_btn;   
+    private Button seven_btn;
+    private Button eight_btn;
+    private Button nine_btn;
+    private Button zero_btn;
+    private Button clc_btn;
+    private Button cncl_btn;
+    private Button login_btn;
+    private Button withdraw_btn;
+    private Button transfer_btn;
+    private Button pin_btn;
+    private Button withdraw_menu_btn;
+    private Button transfer_menu_btn;
+    private Button pin_menu_btn;
+    private Button balance_menu_btn;
+    private Button statement_menu_btn;
+    private Button service_btn;
+    private Button exit_btn;
+
+    KeypadData keypad = new KeypadData();
     public void Start()
     {
-        
-        gamecanvas.SetActive(false);
-        DepOrWith.onValueChanged.AddListener(OnDropdownValueChanged);
+        if (!IsOwner) return;
 
+        transform.position = new Vector3(-927.48f, 13.21f, 412.74f);
+
+        getMyGameObjects();
+
+        gamecanvas.SetActive(false);
+
+
+        //button1 = GameObject.FindWithTag("input_DeporWith").GetComponent<Button>();
+        //button1.onClick.AddListener(Two);
+
+        transform.Rotate(0f, 120f, 0f);
+        
+
+        startListeners();
         Starting();
 
-        playerbot.Rotate(0f, 180f, 0f);
 
     }
+
+    private void startListeners()
+    {
+        if (!IsOwner) return;
+        DepOrWith.onValueChanged.AddListener(OnDropdownValueChanged);
+        one_btn.onClick.AddListener(One);
+        two_btn.onClick.AddListener(Two);
+        three_btn.onClick.AddListener(Three);
+        four_btn.onClick.AddListener(Four);
+        five_btn.onClick.AddListener(Five);
+        six_btn.onClick.AddListener(Six);
+        seven_btn.onClick.AddListener(Seven);
+        eight_btn.onClick.AddListener(Eight);
+        nine_btn.onClick.AddListener(Nine);
+        zero_btn.onClick.AddListener(Zero);
+        clc_btn.onClick.AddListener(Clearing);
+        cncl_btn.onClick.AddListener(Cncl);
+        login_btn.onClick.AddListener(Login);
+        withdraw_btn.onClick.AddListener(submit);
+        transfer_btn.onClick.AddListener(Sendingmoney);
+        pin_btn.onClick.AddListener(Onclicksubmitchangepin);
+        withdraw_menu_btn.onClick.AddListener(movewithdraw);
+        transfer_menu_btn.onClick.AddListener(movetransfer);
+        pin_menu_btn.onClick.AddListener(movepin);
+        balance_menu_btn.onClick.AddListener(movebalance);
+        statement_menu_btn.onClick.AddListener(movestatement);
+        service_btn.onClick.AddListener(clickedservice);
+        exit_btn.onClick.AddListener(clickedexit);
+
+    }
+
+    private void getMyGameObjects()
+    {
+        if (!IsOwner) return;
+
+        //if (!IsOwner) return;
+        receptiontrans = GameObject.FindGameObjectsWithTag("menu").Last().transform;
+        logintrans = GameObject.FindGameObjectsWithTag("login").Last().transform;
+        withdrawtrans = GameObject.FindGameObjectsWithTag("Withdraw").Last().transform;
+        statementtrans = GameObject.FindGameObjectsWithTag("Statement").Last().transform;
+        balancetrans = GameObject.FindGameObjectsWithTag("Balance").Last().transform;
+        transfertrans = GameObject.FindGameObjectsWithTag("Transfer").Last().transform;
+        pintrans = GameObject.FindGameObjectsWithTag("Change_pin").Last().transform;
+
+        //For bots
+        loginbot = GameObject.FindGameObjectsWithTag("statement_bot").Last().transform;
+        receptbot = GameObject.FindGameObjectsWithTag("reception_bot").Last().transform;
+        transferbot = GameObject.FindGameObjectsWithTag("transfer_bot").Last().transform;
+        withdrawbot = GameObject.FindGameObjectsWithTag("withdraw_bot").Last().transform;
+        statementbot = GameObject.FindGameObjectsWithTag("statement_bot").Last().transform;
+        balancebot = GameObject.FindGameObjectsWithTag("balance_bot").Last().transform;
+        pinbot = GameObject.FindGameObjectsWithTag("pin_bot").Last().transform;
+        restpoint = GameObject.FindGameObjectsWithTag("rest").Last().transform;
+        //loginbot = GameObject.FindGameObjectsWithTag("hi").Last().transform;
+
+        //for player avatar
+        playerTrans = GameObject.FindGameObjectsWithTag("Player").Last().transform;
+        playerbot = GameObject.FindGameObjectsWithTag("Character").Last().transform;
+        playerAnim = GameObject.FindGameObjectsWithTag("Character").Last().GetComponent<Animator>();
+
+        //Getting all Screens
+        display = GameObject.FindGameObjectsWithTag("screen").Last();
+        loginscreen = GameObject.FindGameObjectsWithTag("login_screen").Last();
+        mainmenu = GameObject.FindGameObjectsWithTag("mainmenu").Last();
+        balance_screen = GameObject.FindGameObjectsWithTag("screen").Last();
+        sentmoney = GameObject.FindGameObjectsWithTag("tranfer_screen").Last();
+        sendmoneyout = GameObject.FindGameObjectsWithTag("screen").Last();
+        statement = GameObject.FindGameObjectsWithTag("screen").Last();
+        pinchangescreen = GameObject.FindGameObjectsWithTag("otp_screen").Last();
+        gamecanvas = GameObject.FindGameObjectsWithTag("gamecanvas").Last();
+        withdrawScreen = GameObject.FindGameObjectsWithTag("withdraw_screen").Last();
+        keypadInput = GameObject.FindGameObjectsWithTag("keypad").Last();
+        output = GameObject.FindGameObjectsWithTag("output").Last();
+
+
+        //get all inputs
+        depamount = GameObject.FindGameObjectsWithTag("input_dep_amount").Last().GetComponent<Text>();
+        loginid = GameObject.FindGameObjectsWithTag("input_user").Last().GetComponent<Text>();
+        pinnumber = GameObject.FindGameObjectsWithTag("input_pin").Last().GetComponent<Text>();
+        balance_display_text = GameObject.FindGameObjectsWithTag("output").Last().GetComponent<Text>();
+        sentaccdisplay_text = GameObject.FindGameObjectsWithTag("input_receiver_accountNo").Last().GetComponent<Text>();
+        sentmoneydisplay_text = GameObject.FindGameObjectsWithTag("input_TransferAmount").Last().GetComponent<Text>();
+        sentstatusdisplay_text = GameObject.FindGameObjectsWithTag("output").Last().GetComponent<Text>();
+        statementtext = GameObject.FindGameObjectsWithTag("output").Last().GetComponent<Text>();
+        OTP = GameObject.FindGameObjectsWithTag("input_OTP").Last().GetComponent<Text>();
+        pinchangetext = GameObject.FindGameObjectsWithTag("input_PinChangeNewPin").Last().GetComponent<Text>();
+        cashtext = GameObject.FindGameObjectsWithTag("cash").Last().GetComponent<Text>();
+        DepOrWith = GameObject.FindGameObjectsWithTag("input_DeporWith").Last().GetComponent<Dropdown>();
+
+
+        //get all buttons
+        //keypad button
+        one_btn = GameObject.FindGameObjectsWithTag("one").Last().GetComponent<Button>();
+        two_btn = GameObject.FindGameObjectsWithTag("two").Last().GetComponent<Button>();
+        three_btn = GameObject.FindGameObjectsWithTag("three").Last().GetComponent<Button>();
+        four_btn = GameObject.FindGameObjectsWithTag("four").Last().GetComponent<Button>();
+        five_btn = GameObject.FindGameObjectsWithTag("five").Last().GetComponent<Button>();
+        six_btn = GameObject.FindGameObjectsWithTag("six").Last().GetComponent<Button>();
+        seven_btn = GameObject.FindGameObjectsWithTag("seven").Last().GetComponent<Button>();
+        eight_btn = GameObject.FindGameObjectsWithTag("eight").Last().GetComponent<Button>();
+        nine_btn = GameObject.FindGameObjectsWithTag("nine").Last().GetComponent<Button>();
+        zero_btn = GameObject.FindGameObjectsWithTag("zero").Last().GetComponent<Button>();
+        clc_btn = GameObject.FindGameObjectsWithTag("cls").Last().GetComponent<Button>();
+        cncl_btn = GameObject.FindGameObjectsWithTag("cncl").Last().GetComponent<Button>();
+
+        //other button
+        login_btn = GameObject.FindGameObjectsWithTag("login_btn").Last().GetComponent<Button>();
+        withdraw_btn = GameObject.FindGameObjectsWithTag("withdraw_btn").Last().GetComponent<Button>();
+        transfer_btn = GameObject.FindGameObjectsWithTag("transfer_btn").Last().GetComponent<Button>();
+        pin_btn = GameObject.FindGameObjectsWithTag("pin_btn").Last().GetComponent<Button>();
+        withdraw_menu_btn = GameObject.FindGameObjectsWithTag("withdraw_menu").Last().GetComponent<Button>();
+        transfer_menu_btn = GameObject.FindGameObjectsWithTag("transfer_menu").Last().GetComponent<Button>();
+        pin_menu_btn = GameObject.FindGameObjectsWithTag("pin_menu").Last().GetComponent<Button>();
+        balance_menu_btn = GameObject.FindGameObjectsWithTag("balance_menu").Last().GetComponent<Button>();
+        statement_menu_btn = GameObject.FindGameObjectsWithTag("statement_menu").Last().GetComponent<Button>();
+        service_btn = GameObject.FindGameObjectsWithTag("service_btn").Last().GetComponent<Button>();
+        exit_btn = GameObject.FindGameObjectsWithTag("exit_btn").Last().GetComponent<Button>();
+
+
+    }
+
     public void Starting()
     {
+        if (!IsOwner) return;
         //Starting everything is cleared
-        atmscreen.SetActive(false);
+        loginscreen.SetActive(false);
         mainmenu.SetActive(false);
         balance_screen.SetActive(false);
         sentmoney.SetActive(false);
@@ -138,486 +293,90 @@ public class MainCode : MonoBehaviour
         depam = "";
         depamount.text = "";
         withdrawScreen.SetActive(false);
+        keypadInput.SetActive(false);
+        output.SetActive(false);
     }
 
     public void banking()
     {
-        screen.SetActive(true);
-        atmscreen.SetActive(true);
-        userlabel.SetActive(true);
-        pinlabel.SetActive(true);
-        pinchangescreen.SetActive(false);
+        if (!IsOwner) return;
+        Starting();
+        //screen.SetActive(true);
+        display.SetActive(true);
+        keypadInput.SetActive(true);
+        loginscreen.SetActive(true);
+        //userlabel.SetActive(true);
+        //pinlabel.SetActive(true);
+        //pinchangescreen.SetActive(false);
     }
+
+
+    
 
     public void One()
     {
-        if (flag == 1)
-        {
-            if (sentaccdisplay_text.text.Length < 10)
-            {
-                sentaccdisplay_text.text = sentaccdisplay_text.text + "1";
-            }
-            else
-            {
-                sentmoneydisplay_text.text = sentmoneydisplay_text.text + "1";
-            }
-        }
-        
-        else if (flag == 2)
-        {
-            if (OTP.text.Length < 4)
-            {
-                OTP.text = OTP.text + "1";
-            }
-            else
-            {
-                pinchangetext.text = pinchangetext.text + "1";
-            }
-        }
+        if (!IsOwner) return;
 
-        else if (flag == 3)
-        {
-            
-            depamount.text = depamount.text + "1";
-            
-        }
-
-        else
-        {
-            if (loginid.text.Length < 4)
-            {
-                loginid.text = loginid.text + "1";
-            }
-            else
-            {
-                pinnumber.text = pinnumber.text + "X";
-                pinno = pinno + "1";
-            }
-        }
+        keypad.getKeypadData(flag:flag, sentaccdisplay_text: ref sentaccdisplay_text,sentmoneydisplay_text: ref sentmoneydisplay_text,OTP:ref OTP,pinchangetext:ref pinchangetext, depamount: ref depamount,loginid:ref loginid,pinnumber: ref pinnumber, pinno:ref pinno, num: "1");
     }
 
     public void Two()
     {
-        if (flag == 1)
-        {
-            if (sentaccdisplay_text.text.Length < 10)
-            {
-                sentaccdisplay_text.text = sentaccdisplay_text.text + "2";
-            }
-            else
-            {
-                sentmoneydisplay_text.text = sentmoneydisplay_text.text + "2";
-            }
-        }
-
-        else if (flag == 2)
-        {
-            if (OTP.text.Length < 4)
-            {
-                OTP.text = OTP.text + "2";
-            }
-            else
-            {
-                pinchangetext.text = pinchangetext.text + "2";
-            }
-        }
-        else if (flag == 3)
-        {
-
-            depamount.text = depamount.text + "2";
-
-        }
-
-        else
-        {
-            if (loginid.text.Length < 4)
-            {
-                loginid.text = loginid.text + "2";
-            }
-            else
-            {
-                pinnumber.text = pinnumber.text + "X";
-                pinno = pinno + "2";
-            }
-        }
+        if (!IsOwner) return;
+        keypad.getKeypadData(flag: flag, sentaccdisplay_text: ref sentaccdisplay_text, sentmoneydisplay_text: ref sentmoneydisplay_text, OTP: ref OTP, pinchangetext: ref pinchangetext, depamount: ref depamount, loginid: ref loginid, pinnumber: ref pinnumber, pinno: ref pinno, num: "2");
     }
 
     public void Three()
     {
-        if (flag == 1)
-        {
-            if (sentaccdisplay_text.text.Length < 10)
-            {
-                sentaccdisplay_text.text = sentaccdisplay_text.text + "3";
-            }
-            else
-            {
-                sentmoneydisplay_text.text = sentmoneydisplay_text.text + "3";
-            }
-        }
-
-        else if (flag == 2)
-        {
-            if (OTP.text.Length < 4)
-            {
-                OTP.text = OTP.text + "3";
-            }
-            else
-            {
-                pinchangetext.text = pinchangetext.text + "3";
-            }
-        }
-        else if (flag == 3)
-        {
-
-            depamount.text = depamount.text + "3";
-
-        }
-
-        else
-        {
-            if (loginid.text.Length < 4)
-            {
-                loginid.text = loginid.text + "3";
-            }
-            else
-            {
-                pinnumber.text = pinnumber.text + "X";
-                pinno = pinno + "3";
-            }
-        }
+        if (!IsOwner) return;
+        keypad.getKeypadData(flag: flag, sentaccdisplay_text: ref sentaccdisplay_text, sentmoneydisplay_text: ref sentmoneydisplay_text, OTP: ref OTP, pinchangetext: ref pinchangetext, depamount: ref depamount, loginid: ref loginid, pinnumber: ref pinnumber, pinno: ref pinno, num: "3");
     }
 
     public void Four()
     {
-        if (flag == 1)
-        {
-            if (sentaccdisplay_text.text.Length < 10)
-            {
-                sentaccdisplay_text.text = sentaccdisplay_text.text + "4";
-            }
-            else
-            {
-                sentmoneydisplay_text.text = sentmoneydisplay_text.text + "4";
-            }
-        }
-
-        else if (flag == 2)
-        {
-            if (OTP.text.Length < 4)
-            {
-                OTP.text = OTP.text + "4";
-            }
-            else
-            {
-                pinchangetext.text = pinchangetext.text + "4";
-            }
-        }
-        else if (flag == 3)
-        {
-
-            depamount.text = depamount.text + "4";
-
-        }
-
-        else
-        {
-            if (loginid.text.Length < 4)
-            {
-                loginid.text = loginid.text + "4";
-            }
-            else
-            {
-                pinnumber.text = pinnumber.text + "X";
-                pinno = pinno + "4";
-            }
-        }
+        if (!IsOwner) return;
+        keypad.getKeypadData(flag: flag, sentaccdisplay_text: ref sentaccdisplay_text, sentmoneydisplay_text: ref sentmoneydisplay_text, OTP: ref OTP, pinchangetext: ref pinchangetext, depamount: ref depamount, loginid: ref loginid, pinnumber: ref pinnumber, pinno: ref pinno, num: "4");
     }
 
     public void Five()
     {
-        if (flag == 1)
-        {
-            if (sentaccdisplay_text.text.Length < 10)
-            {
-                sentaccdisplay_text.text = sentaccdisplay_text.text + "5";
-            }
-            else
-            {
-                sentmoneydisplay_text.text = sentmoneydisplay_text.text + "5";
-            }
-        }
-
-        else if (flag == 2)
-        {
-            if (OTP.text.Length < 4)
-            {
-                OTP.text = OTP.text + "5";
-            }
-            else
-            {
-                pinchangetext.text = pinchangetext.text + "5";
-            }
-        }
-
-        else if (flag == 3)
-        {
-
-            depamount.text = depamount.text + "5";
-
-        }
-
-        else
-        {
-            if (loginid.text.Length < 4)
-            {
-                loginid.text = loginid.text + "5";
-            }
-            else
-            {
-                pinnumber.text = pinnumber.text + "X";
-                pinno = pinno + "5";
-            }
-        }
+        if (!IsOwner) return;
+        keypad.getKeypadData(flag: flag, sentaccdisplay_text: ref sentaccdisplay_text, sentmoneydisplay_text: ref sentmoneydisplay_text, OTP: ref OTP, pinchangetext: ref pinchangetext, depamount: ref depamount, loginid: ref loginid, pinnumber: ref pinnumber, pinno: ref pinno, num: "5");
     }
 
     public void Six()
     {
-        if (flag == 1)
-        {
-            if (sentaccdisplay_text.text.Length < 10)
-            {
-                sentaccdisplay_text.text = sentaccdisplay_text.text + "6";
-            }
-            else
-            {
-                sentmoneydisplay_text.text = sentmoneydisplay_text.text + "6";
-            }
-        }
-
-        else if (flag == 2)
-        {
-            if (OTP.text.Length < 4)
-            {
-                OTP.text = OTP.text + "6";
-            }
-            else
-            {
-                pinchangetext.text = pinchangetext.text + "6";
-            }
-        }
-
-        else if (flag == 3)
-        {
-
-            depamount.text = depamount.text + "6";
-
-        }
-
-        else
-        {
-            if (loginid.text.Length < 4)
-            {
-                loginid.text = loginid.text + "6";
-            }
-            else
-            {
-                pinnumber.text = pinnumber.text + "X";
-                pinno = pinno + "6";
-            }
-        }
+        if (!IsOwner) return;
+        keypad.getKeypadData(flag: flag, sentaccdisplay_text: ref sentaccdisplay_text, sentmoneydisplay_text: ref sentmoneydisplay_text, OTP: ref OTP, pinchangetext: ref pinchangetext, depamount: ref depamount, loginid: ref loginid, pinnumber: ref pinnumber, pinno: ref pinno, num: "6");
     }
 
     public void Seven()
     {
-        if (flag == 1)
-        {
-            if (sentaccdisplay_text.text.Length < 10)
-            {
-                sentaccdisplay_text.text = sentaccdisplay_text.text + "7";
-            }
-            else
-            {
-                sentmoneydisplay_text.text = sentmoneydisplay_text.text + "7";
-            }
-        }
-
-        else if (flag == 2)
-        {
-            if (OTP.text.Length < 4)
-            {
-                OTP.text = OTP.text + "7";
-            }
-            else
-            {
-                pinchangetext.text = pinchangetext.text + "7";
-            }
-        }
-
-        else if (flag == 3)
-        {
-
-            depamount.text = depamount.text + "7";
-
-        }
-
-        else
-        {
-            if (loginid.text.Length < 4)
-            {
-                loginid.text = loginid.text + "7";
-            }
-            else
-            {
-                pinnumber.text = pinnumber.text + "X";
-                pinno = pinno + "7";
-            }
-        }
+        if (!IsOwner) return;
+        keypad.getKeypadData(flag: flag, sentaccdisplay_text: ref sentaccdisplay_text, sentmoneydisplay_text: ref sentmoneydisplay_text, OTP: ref OTP, pinchangetext: ref pinchangetext, depamount: ref depamount, loginid: ref loginid, pinnumber: ref pinnumber, pinno: ref pinno, num: "7");
     }
 
     public void Eight()
     {
-        if (flag == 1)
-        {
-            if (sentaccdisplay_text.text.Length < 10)
-            {
-                sentaccdisplay_text.text = sentaccdisplay_text.text + "8";
-            }
-            else
-            {
-                sentmoneydisplay_text.text = sentmoneydisplay_text.text + "8";
-            }
-        }
-
-        else if (flag == 2)
-        {
-            if (OTP.text.Length < 4)
-            {
-                OTP.text = OTP.text + "8";
-            }
-            else
-            {
-                pinchangetext.text = pinchangetext.text + "8";
-            }
-        }
-
-        else if (flag == 3)
-        {
-
-            depamount.text = depamount.text + "8";
-
-        }
-
-        else
-        {
-            if (loginid.text.Length < 4)
-            {
-                loginid.text = loginid.text + "8";
-            }
-            else
-            {
-                pinnumber.text = pinnumber.text + "X";
-                pinno = pinno + "8";
-            }
-        }
+        if (!IsOwner) return;
+        keypad.getKeypadData(flag: flag, sentaccdisplay_text: ref sentaccdisplay_text, sentmoneydisplay_text: ref sentmoneydisplay_text, OTP: ref OTP, pinchangetext: ref pinchangetext, depamount: ref depamount, loginid: ref loginid, pinnumber: ref pinnumber, pinno: ref pinno, num: "8");
     }
 
     public void Nine()
     {
-        if (flag == 1)
-        {
-            if (sentaccdisplay_text.text.Length < 10)
-            {
-                sentaccdisplay_text.text = sentaccdisplay_text.text + "9";
-            }
-            else
-            {
-                sentmoneydisplay_text.text = sentmoneydisplay_text.text + "9";
-            }
-        }
-
-        else if (flag == 2)
-        {
-            if (OTP.text.Length < 4)
-            {
-                OTP.text = OTP.text + "9";
-            }
-            else
-            {
-                pinchangetext.text = pinchangetext.text + "9";
-            }
-        }
-
-        else if (flag == 3)
-        {
-
-            depamount.text = depamount.text + "9";
-
-        }
-
-        else
-        {
-            if (loginid.text.Length < 4)
-            {
-                loginid.text = loginid.text + "9";
-            }
-            else
-            {
-                pinnumber.text = pinnumber.text + "X";
-                pinno = pinno + "9";
-            }
-        }
+        if (!IsOwner) return;
+        keypad.getKeypadData(flag: flag, sentaccdisplay_text: ref sentaccdisplay_text, sentmoneydisplay_text: ref sentmoneydisplay_text, OTP: ref OTP, pinchangetext: ref pinchangetext, depamount: ref depamount, loginid: ref loginid, pinnumber: ref pinnumber, pinno: ref pinno, num: "9");
     }
 
     public void Zero()
     {
-        if (flag == 1)
-        {
-            if (sentaccdisplay_text.text.Length < 10)
-            {
-                sentaccdisplay_text.text = sentaccdisplay_text.text + "0";
-            }
-            else
-            {
-                sentmoneydisplay_text.text = sentmoneydisplay_text.text + "0";
-            }
-        }
-
-        else if (flag == 2)
-        {
-            if (OTP.text.Length < 4)
-            {
-                OTP.text = OTP.text + "0";
-            }
-            else
-            {
-                pinchangetext.text = pinchangetext.text + "0";
-            }
-        }
-
-        else if (flag == 3)
-        {
-
-            depamount.text = depamount.text + "0";
-
-        }
-
-        else
-        {
-            if (loginid.text.Length < 4)
-            {
-                loginid.text = loginid.text + "0";
-            }
-            else
-            {
-                pinnumber.text = pinnumber.text + "X";
-                pinno = pinno + "0";
-            }
-        }
+        if (!IsOwner) return;
+        keypad.getKeypadData(flag: flag, sentaccdisplay_text: ref sentaccdisplay_text, sentmoneydisplay_text: ref sentmoneydisplay_text, OTP: ref OTP, pinchangetext: ref pinchangetext, depamount: ref depamount, loginid: ref loginid, pinnumber: ref pinnumber, pinno: ref pinno, num: "0");
     }
 
     public void Clearing()
     {
+        if (!IsOwner) return;
         loginid.text = "";
         pinnumber.text = "";
         sentmoneydisplay_text.text = "";
@@ -630,6 +389,7 @@ public class MainCode : MonoBehaviour
 
     public void Cncl()
     {
+        if (!IsOwner) return;
         loginid.text = "";
         pinnumber.text = "";
         userid = "";
@@ -648,118 +408,77 @@ public class MainCode : MonoBehaviour
 
     public void Login()
     {
-        atmscreen.SetActive(false);
+        if (!IsOwner) return;
+        display.SetActive(false);
+        keypadInput.SetActive(false);
+        loginscreen.SetActive(false);
         userid = loginid.text;
         loginid.text = "";
         pinnumber.text = "";
 
         Debug.Log("Login Done");
-
-        StartCoroutine(loginrequest(userid, pinno));
-
-    }
-
-    IEnumerator loginrequest(string data, string pin)
-    {
-        string url = "http://domain url/login?CustomerId=" + data + "&Pin=" + pin;
-        UnityWebRequest request = UnityWebRequest.Get(url);
-        yield return request.SendWebRequest();
-
-        if (request.result == UnityWebRequest.Result.Success)
-        {
-            response_data = request.downloadHandler.text;
-            Debug.Log(response_data);
-            LoginResponse received_one = JsonUtility.FromJson<LoginResponse>(response_data);
-            if (received_one.Code != 2)
+        NetworkHelper loginHelper = new NetworkHelper(DOMAIN_URL);
+        Debug.Log(userid);
+        StartCoroutine(loginHelper.RequestApi(remaining_url:"/login?CustomerId=" + userid + "&Pin=" + pinno, callback: (response) => {
+            Debug.Log(response);
+            Debug.Log("Ithu  varaikum ok");
+            if (response == "400")
             {
                 loginstay = false;
+                pinno = "";
                 Debug.Log("Failed");
+                banking();
             }
             else
             {
-                mainmenulabel.text = "Welcome " + received_one.data;
-                Debug.Log(mainmenulabel.text);
-                door1.SetActive(false);
-                door2.SetActive(false);
+                
+                //door1.SetActive(false);
+                //door2.SetActive(false);
 
                 StartCoroutine(Delaysecondafter(3));
-                
+
                 gamecanvas.SetActive(true);
-                OtherService.SetActive(false);
+                //OtherService.SetActive(false);
                 StartCoroutine(CashReq(userid, pinno));
             }
-
-
-        }
-        else
-        {
-            Debug.LogError("API request failed: " + request.error);
-            banking();
-        }
+        }));
     }
-
-    [System.Serializable]
-
-    public class LoginResponse
-    {
-        public bool login;
-        public string data;
-        public int Code;
-    }
-
-    public class BalanceResponse
-    {
-        public bool login;
-        public string data;
-        public int Code;
-    }
-    IEnumerator GetBalance(string data, string pin)
-    {
-        string url = "http://domain url/balance?CustomerId=" + data + "&Pin=" + pin;
-        Debug.Log(url);
-        UnityWebRequest www = UnityWebRequest.Get(url);
-        yield return www.SendWebRequest();
-
-        if (www.result != UnityWebRequest.Result.Success)
-        {
-            Debug.Log(www.error);
-        }
-        else
-        {
-            string json = www.downloadHandler.text;
-            BalanceResponse response = JsonUtility.FromJson<BalanceResponse>(json);
-            Debug.Log(response.data);
-            if (response.login)
-            {
-                balance_display_text.text = "";
-                balance_screen.SetActive(true);
-                screen.SetActive(true);
-                balance_display_text.text = "Balance: " + float.Parse(response.data);
-                display.SetActive(true);
-                StartCoroutine(Delaysecond(3));
-                
-            }
-            else
-            {
-                Debug.Log("Access denied. Error code: " + response.Code + " Error message: " + response.data);
-                balance_screen.SetActive(true);
-                balance_display_text.text = "Error displaying message";
-            }
-        }
-    }
-
+   
     public void BalanceClicked()
     {
+        if (!IsOwner) return;
         mainmenu.SetActive(false);
         Debug.Log(userid);
         Debug.Log(pinno);
         Debug.Log("Credentials");
-        StartCoroutine(GetBalance(userid, pinno));
+        NetworkHelper balanceHelper = new NetworkHelper(DOMAIN_URL);
+        string remaining_url = "/balance?CustomerId=" + userid + "&Pin=" + pinno;
+        StartCoroutine(balanceHelper.RequestApi(remaining_url: remaining_url, callback: (response) =>
+        {
+            if (response == "400")
+            {
+                Debug.Log("Access denied. Error message: " + response);
+                balance_screen.SetActive(true);
+                balance_display_text.text = "Error displaying message";
+            }
+            else
+            {
+                balance_display_text.text = "";   
+                balance_screen.SetActive(true);
+                //screen.SetActive(true);
+                output.SetActive(true);
+                balance_display_text.text = "Balance: " + float.Parse(response);
+                display.SetActive(true);
+                StartCoroutine(Delaysecond(3));
+                StartCoroutine(outputTimer(3));
+            }
+        }));
     }
 
 
     public void SentMoneyclicked()
     {
+        if (!IsOwner) return;
         sentmoney.SetActive(true);
         mainmenu.SetActive(false);
         flag = 1;
@@ -768,314 +487,189 @@ public class MainCode : MonoBehaviour
 
     public void Sendingmoney()
     {
+        if (!IsOwner) return;
+        keypadInput.SetActive(false);
         sentmoney.SetActive(false );
         sent_acc = sentaccdisplay_text.text;
         sent_money = sentmoneydisplay_text.text;
-        StartCoroutine(SendMoney(receiverAccount: sent_acc, pin: pinno, amount: sent_money, customerId: userid));
-
-    }
-
-
-    public class SendMoneyResponse
-    {
-        public bool login;
-        public string data;
-        public int Code;
-    }
-
-
-    IEnumerator SendMoney(string receiverAccount, string pin, string amount, string customerId)
-    {
-        string url = "http://domain url/sendmoney?ReceiverAccount=" + receiverAccount
-                    + "&pin=" + pin
-                    + "&amount=" + amount
-                    + "&CustomerId=" + customerId;
-
-        UnityWebRequest request = UnityWebRequest.Get(url);
-        yield return request.SendWebRequest();
-        sendmoneyout.SetActive(true);
-
-        if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+        NetworkHelper sendMoneyHelper = new NetworkHelper(DOMAIN_URL);
+        //StartCoroutine(SendMoney(receiverAccount: sent_acc, pin: pinno, amount: sent_money, customerId: userid));
+        string remaining_url = "/sendmoney?ReceiverAccount=" + sent_acc + "&pin=" + pinno + "&amount=" + sent_money+ "&CustomerId=" + userid;
+        StartCoroutine(sendMoneyHelper.RequestApi(remaining_url:remaining_url, callback: (response)=>
         {
-            Debug.Log(request.error);
-        }
-        else
-        {
-            string responseText = request.downloadHandler.text;
-            SendMoneyResponse response1 = JsonUtility.FromJson<SendMoneyResponse>(responseText);
-
-            if (response1.login)
+            if (response == "400")
             {
-                Debug.Log("Money Sent Successful");
-                display.SetActive(true);
-                sentstatusdisplay_text.text = response1.data;
-                sentmoney.SetActive(false);
-                StartCoroutine(Delaysecond(3));
+                Debug.Log("Failed");
             }
             else
             {
-                sentstatusdisplay_text.text = response1.data;
-                Debug.Log(response1.data);
-            }
-        }
+                    Debug.Log("Money Sent Successful");
+                    display.SetActive(true);
+                output.SetActive(true);
 
+                sentstatusdisplay_text.text = response;
+                    sentmoney.SetActive(false);
+                    StartCoroutine(Delaysecond(3)); 
 
-    }
-
-
-    [System.Serializable]
-    public class StatementResponse
-    {
-        public bool login;
-        public List<Transaction> data;
-        public int Code;
-    }
-
-    [System.Serializable]
-    public class Transaction
-    {
-        public string time;
-        public string type;
-        public float amount;
-    }
-
-    IEnumerator GetStatement(string customerId, string pin)
-    {
-        string url = "http://domain url/statement?CustomerId=" + customerId
-                    + "&Pin=" + pin;
-
-        UnityWebRequest request = UnityWebRequest.Get(url);
-        yield return request.SendWebRequest();
-
-        if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
-        {
-            Debug.Log(request.error);
-        }
-        else
-        {
-            string responseText = request.downloadHandler.text;
-            StatementResponse response2 = JsonUtility.FromJson<StatementResponse>(responseText);
-
-            if (response2.login)
-            {
-                statement.SetActive(true);
-                display.SetActive(true);
-                statementtext.text = "";
-                Debug.Log(response2.data.Count);
-                if (response2.data.Count > 6)
-                {
-                    for (int i = response2.data.Count - 1; i > response2.data.Count - 6; i--)
-                    {
-                        statementtext.text = statementtext.text + response2.data[i].time + "|  Amount: " + response2.data[i].amount + "|  Type of transaction: " + response2.data[i].type + "\n\n";
-
-                        Debug.Log(response2.data[i].time + "Amount: " + response2.data[i].amount + "Type of transaction" + response2.data[i].type);
-                    }
-                }
-                else
-                {
-                    for (int i = response2.data.Count - 1; i < response2.data.Count; i++)
-                    {
-                        statementtext.text = statementtext.text + response2.data[i].time + "|  Amount: " + response2.data[i].amount + "|  Type of transaction: " + response2.data[i].type + "\n\n";
-
-                        Debug.Log(response2.data[i].time + "Amount: " + response2.data[i].amount + "Type of transaction" + response2.data[i].type);
-                    }
-                }
-                StartCoroutine(Delaysecond(3));
+                StartCoroutine(outputTimer(3));
 
             }
-            else
-            {
-                Debug.Log("Failed: " + response2.data);
-            }
-        }
+        }));
     }
+
+
+    
+
+
     public void StatementClicked()
     {
+        if (!IsOwner) return;
         mainmenu.SetActive(false);
-        StartCoroutine(GetStatement(customerId: userid, pin:pinno));
+        //StartCoroutine(GetStatement(customerId: userid, pin:pinno));
+        NetworkHelper statementHelper = new NetworkHelper(DOMAIN_URL);
+        StartCoroutine(statementHelper.RequestStatement(remaining_url: "/change_pin/req_otp?CustomerId=" + userid+ "&Pin=" + pinno, callback: (response) =>
+        {
+            statement.SetActive(true);
+            display.SetActive(true);
+            statementtext.text = "";
+            Debug.Log(response.Count);
+            if (response.Count > 6)
+            {
+                for (int i = response.Count - 1; i > response.Count - 6; i--)
+                {
+                    statementtext.text = statementtext.text + response[i].time + "|  Amount: " + response[i].amount + "|  Type of transaction: " + response[i].type + "\n\n";
+
+                    Debug.Log(response[i].time + "Amount: " + response[i].amount + "Type of transaction" + response[i].type);
+                }
+            }
+            else
+            {
+                for (int i = response.Count - 1; i < response.Count; i++)
+                {
+                    statementtext.text = statementtext.text + response[i].time + "|  Amount: " + response[i].amount + "|  Type of transaction: " + response[i].type + "\n\n";
+
+                    Debug.Log(response[i].time + "Amount: " + response[i].amount + "Type of transaction" + response[i].type);
+                }
+            }
+            output.SetActive(true);
+            StartCoroutine(Delaysecond(3));
+            StartCoroutine(outputTimer(2));
+
+
+        }));
     }
 
 
     public void Onclickchangepin()
     {
+        if (!IsOwner) return;
         mainmenu.SetActive(false);
         flag = 2;
-        StartCoroutine(RequestOTP(customerId: userid, pin: pinno));
-    }
-
-    public class RequestOTPResponse
-    {
-        public bool login;
-        public string data;
-        public int Code;
-    }
-
-    IEnumerator RequestOTP(string customerId, string pin)
-    {
-        string url = "http://domain url/change_pin/req_otp?CustomerId=" + customerId + "&Pin=" + pin;
-        Debug.Log(url);
-        using (UnityWebRequest webRequest = UnityWebRequest.Get(url))
+        pinchangescreen.SetActive(true);
+        //StartCoroutine(RequestOTP(customerId: userid, pin: pinno));
+        NetworkHelper reqOtp = new NetworkHelper(DOMAIN_URL);
+        StartCoroutine(reqOtp.RequestApi(remaining_url:"/change_pin/req_otp?CustomerId=" + userid + "&Pin=" + pinno, callback: (response) =>
         {
-            yield return webRequest.SendWebRequest();
-            
-
-
-            if (webRequest.result != UnityWebRequest.Result.Success)
+            if (response != "400")
             {
-                Debug.Log("Request failed: " + webRequest.error);
+                Debug.Log("Request failed");
             }
             else
             {
-                string responseText = webRequest.downloadHandler.text;
-                Debug.Log(responseText);
-                RequestOTPResponse response5 = JsonUtility.FromJson<RequestOTPResponse>(responseText);
                 display.SetActive(true);
-                identity = response5.data;
+                identity = response;
                 pinchangescreen.SetActive(true);
             }
-        }
+        }));
     }
-
-
     public void Onclicksubmitchangepin()
     {
+        if (!IsOwner) return;
+        keypadInput.SetActive(false);
         newpin = pinchangetext.text;
         otp = OTP.text;
-        StartCoroutine(VerifyChangePin(otp: otp, id: identity, newPin: newpin));
-    }
-
-    public class ChangePin
-    {
-        public bool login;
-        public string data;
-        public int Code;
-    }
-
-    IEnumerator VerifyChangePin(string otp, string id, string newPin)
-    {
-        string url = "http://domain url/change_pin?OTP=" + otp + "&ID=" + id + "&PIN=" + newPin;
-
-        using (UnityWebRequest webRequest = UnityWebRequest.Get(url))
+        //StartCoroutine(VerifyChangePin(otp: otp, id: identity, newPin: newpin));
+        NetworkHelper changePin = new NetworkHelper(DOMAIN_URL);
+        StartCoroutine(changePin.RequestApi(remaining_url: "/change_pin?OTP=" + otp + "&ID=" + identity, callback: (response) =>
         {
-            yield return webRequest.SendWebRequest();
-
-            if (webRequest.result != UnityWebRequest.Result.Success)
+            if (response == "400")
             {
-                Debug.Log("Request failed: " + webRequest.error);
+                Debug.Log("Request failed:");
             }
             else
             {
                 pinchangescreen.SetActive(false);
-                string responseText = webRequest.downloadHandler.text;
-                ChangePin response6 = JsonUtility.FromJson<ChangePin>(responseText);
-                Debug.Log(response6.data);
-                
-            }
-        }
-    }
-
-
-    public class DepositResponse
-    {
-        public bool login;
-        public string data;
-        public int Code;
-    }
-
-    IEnumerator DepositMoney(string customerId, string amount)
-    {
-        string url = "http://domain url/deposit?CustomerId=" + customerId
-                    + "&Amount=" + amount;
-
-        UnityWebRequest request = UnityWebRequest.Get(url);
-        yield return request.SendWebRequest();
-
-        if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
-        {
-            Debug.Log(request.error);
-        }
-        else
-        {
-            string responseText = request.downloadHandler.text;
-            DepositResponse response6 = JsonUtility.FromJson<DepositResponse>(responseText);
-
-            if (response6.login)
-            {
-                screen.SetActive(true);
-                balance_screen.SetActive(true);
                 display.SetActive(true);
-                balance_display_text.text = response6.data;
-                balance_display_text.text = response6.data;
-                StartCoroutine(CashReq(userid, pinno));
-                StartCoroutine(Delaysecond(3));
+                output.SetActive(true);
+                balance_display_text.text = response;
+                Debug.Log(response);
+                StartCoroutine(outputTimer(2));
+
 
             }
-            else
-            {
-                Debug.Log("Request Failed: "+ response6.data);
-            }
-        }
+        }));
     }
-
-
     private void OnClickWithdraw(string Amount)
     {
-        StartCoroutine(WithdrawMoney(customerId:userid, amount:Amount));
-    }
-
-
-    public class WithdrawResponse
-    {
-        public bool login;
-        public string data;
-        public int Code;
-    }
-
-    IEnumerator WithdrawMoney(string customerId, string amount)
-    {
-        string url = "http://domain url/withdraw?CustomerId=" + customerId
-                    + "&Amount=" + amount;
-        
-
-        UnityWebRequest request = UnityWebRequest.Get(url);
-        yield return request.SendWebRequest();
-
-        if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+        if (!IsOwner) return;
+        //StartCoroutine(WithdrawMoney(customerId:userid, amount:Amount));
+        NetworkHelper withdrawHelper = new NetworkHelper(DOMAIN_URL);
+        StartCoroutine(withdrawHelper.RequestApi(remaining_url: "withdraw?CustomerId=" + userid + "&Amount=" + Amount, callback: (response) =>
         {
-            Debug.Log(request.error);
-        }
-        else
-        {
-            string responseText = request.downloadHandler.text;
-            WithdrawResponse response7 = JsonUtility.FromJson<WithdrawResponse>(responseText);
-
-            if (response7.login)
+            if (response == "400")
             {
-                screen.SetActive(true);
-                balance_screen.SetActive(true);
-                display.SetActive(true);
-                balance_display_text.text = response7.data;
-                StartCoroutine(CashReq(userid, pinno));
-                StartCoroutine(Delaysecond(3));
-
+                Debug.Log("Failed");
             }
             else
             {
-                Debug.Log("Request Failed: "+ response7.data);
+                //screen.SetActive(true);
+                balance_screen.SetActive(true);
+                display.SetActive(true);
+                balance_display_text.text = response;
+                StartCoroutine(CashReq(userid, pinno));
+                StartCoroutine(Delaysecond(3));
+                withdrawScreen.SetActive(false);
+                StartCoroutine(outputTimer(2));
+
             }
-        }
+        })) ;
     }
 
 
     private void OnClickDeposit(string Amount)
     {
-        StartCoroutine(DepositMoney(customerId: userid, amount: Amount));
+        if (!IsOwner) return;
+        //StartCoroutine(DepositMoney(customerId: userid, amount: Amount));
+        NetworkHelper depositHelper = new NetworkHelper(DOMAIN_URL);
+        StartCoroutine(depositHelper.RequestApi(remaining_url: "deposit?CustomerId=" + userid + "&Amount=" + Amount, callback: (response) =>
+        {
+            if (response == "400")
+            {
+                Debug.Log("Failed");
+            }
+            else
+            {
+                //screen.SetActive(true);
+                balance_screen.SetActive(true);
+                display.SetActive(true);
+                balance_display_text.text = response;
+                //balance_display_text.text = response;
+                StartCoroutine(CashReq(userid, pinno));
+                StartCoroutine(Delaysecond(3));
+                withdrawScreen.SetActive(false);
+                StartCoroutine(outputTimer(2));
+
+            }
+        })) ;
     }
 
     public void submit()
     {
+        if (!IsOwner) return;
+        keypadInput.SetActive(false);
         if (selectedOption == "Deposit")
         {
+
             depam = depamount.text;
             Debug.Log(depam);
             OnClickDeposit(Amount: depam);
@@ -1089,15 +683,19 @@ public class MainCode : MonoBehaviour
 
     private void OnDropdownValueChanged(int index)
     {
+        if (!IsOwner) return;
         selectedOption = DepOrWith.options[index].text;
     }
 
 
     void OnTriggerEnter(Collider other)
     {
+        if (!IsOwner) return;
         if (other.CompareTag("Transfer"))
         {
             Starting();
+            display.SetActive(true);
+            keypadInput.SetActive(true);
             Debug.Log("Transfer");
             SentMoneyclicked();
             
@@ -1105,7 +703,9 @@ public class MainCode : MonoBehaviour
         else if(other.CompareTag("Change_pin"))
         {
             Starting();
+            display.SetActive(true);
             Debug.Log("Change pin");
+            keypadInput.SetActive(true);
             Onclickchangepin();
         }
         else if (other.CompareTag("Balance"))
@@ -1117,7 +717,9 @@ public class MainCode : MonoBehaviour
         else if (other.CompareTag("Withdraw"))
         {
             Starting();
+            display.SetActive(true);
             Debug.Log("Withdraw");
+            keypadInput.SetActive(true);
             flag = 3;
             withdrawScreen.SetActive(true);
 
@@ -1128,23 +730,25 @@ public class MainCode : MonoBehaviour
             Debug.Log("Statement");
             StatementClicked();
         }
-        else if (other.CompareTag("Enter"))
+        /*else if (other.CompareTag("Enter"))
         {
             Starting();
             Debug.Log("Enter");
             EnterBank.SetActive(true);
-        }
+        }*/
     }
 
     public void EnterbankClicked()
     {
+        if (!IsOwner) return;
         Delaysecondatstartin();
         login = true;
-        EnterBank.SetActive(false);
+        //EnterBank.SetActive(false);
     }
 
     private void Delaysecondatstartin()
     {
+        if (!IsOwner) return;
       
             playerbot.Rotate(0f, 180f, 0f);
         
@@ -1160,7 +764,8 @@ public class MainCode : MonoBehaviour
 
     IEnumerator CashReq(string customerId, string pin)
     {
-        string url = "http://domain url/cash?CustomerId=" + customerId
+        
+        string url = "http://azhagesan.pythonanywhere.com/cash?CustomerId=" + customerId
                     + "&Pin=" + pin;
 
         UnityWebRequest request = UnityWebRequest.Get(url);
@@ -1177,7 +782,7 @@ public class MainCode : MonoBehaviour
 
             if (response8.login)
             {
-                cashtext.text ="Cash in wallet: " + response8.data;
+                cashtext.text ="Wallet: " + response8.data;
 
             }
             else
@@ -1190,6 +795,7 @@ public class MainCode : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
+        if (!IsOwner) return;
         if (other.CompareTag("login") && loginstay == false)
         {
             Debug.Log("Login");
@@ -1200,6 +806,8 @@ public class MainCode : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
+        if (!IsOwner) return;
+
         if (other.CompareTag("login") && loginstay == false)
         {
             Debug.Log("Login");
@@ -1210,6 +818,7 @@ public class MainCode : MonoBehaviour
     //Player Movement script
     private void Update()
     {
+        if (!IsOwner) return;
         if (recept)
         {
             if (playerTrans.position == receptiontrans.position)
@@ -1218,8 +827,9 @@ public class MainCode : MonoBehaviour
                 playerAnim.SetTrigger("idle");
                 recept = false;
                 transform.LookAt(receptbot);
+                transform.Rotate(0f, transform.rotation.y, 0f);
                 mainmenu.SetActive(true);
-                OtherService.SetActive(false);
+                //OtherService.SetActive(false);
             }
             else
             {
@@ -1243,6 +853,7 @@ public class MainCode : MonoBehaviour
                 playerAnim.SetTrigger("walk");
                 playerAnim.ResetTrigger("idle");
                 transform.LookAt(logintrans);
+                transform.Rotate(0f, transform.rotation.y, 0f);
                 transform.position = Vector3.MoveTowards(transform.position, logintrans.position, speed * Time.deltaTime);
             }
         }
@@ -1254,8 +865,10 @@ public class MainCode : MonoBehaviour
                 playerAnim.ResetTrigger("walk");
                 playerAnim.SetTrigger("idle");
                 balance = false;
+
                 transform.LookAt(balancebot);
-                OtherService.SetActive(true);
+                transform.Rotate(0f, transform.rotation.y, 0f);
+                //OtherService.SetActive(true);
             }
             else
             {
@@ -1274,7 +887,10 @@ public class MainCode : MonoBehaviour
                 playerAnim.SetTrigger("idle");
                 withdraw = false;
                 transform.LookAt(withdrawbot);
-                OtherService.SetActive(true);
+                //OtherService.SetActive(true);
+                transform.Rotate(0f, transform.rotation.y, 0f);
+                
+
             }
             else
             {
@@ -1293,7 +909,8 @@ public class MainCode : MonoBehaviour
                 playerAnim.SetTrigger("idle");
                 statements = false;
                 transform.LookAt(statementbot);
-                OtherService.SetActive(true);
+                transform.Rotate(0f, transform.rotation.y, 0f);
+                //OtherService.SetActive(true);
             }
             else
             {
@@ -1312,7 +929,8 @@ public class MainCode : MonoBehaviour
                 playerAnim.SetTrigger("idle");
                 transfer = false;
                 transform.LookAt(transferbot);
-                OtherService.SetActive(true);
+                transform.Rotate(0f, transform.rotation.y, 0f);
+                //OtherService.SetActive(true);
             }
             else
             {
@@ -1331,7 +949,8 @@ public class MainCode : MonoBehaviour
                 playerAnim.SetTrigger("idle");
                 pin = false;
                 transform.LookAt(pinbot);
-                OtherService.SetActive(true);
+                transform.Rotate(0f, transform.rotation.y, 0f);
+                //OtherService.SetActive(true);
             }
             else
             {
@@ -1348,8 +967,9 @@ public class MainCode : MonoBehaviour
                 playerAnim.ResetTrigger("walk");
                 playerAnim.SetTrigger("idle");
                 rest = false;
-                transform.LookAt(displaybot);
-                OtherService.SetActive(true);
+                transform.LookAt(transfertrans);
+                transform.Rotate(0f, transform.rotation.y, 0f);
+                //OtherService.SetActive(true);
             }
             else
             {
@@ -1367,12 +987,14 @@ public class MainCode : MonoBehaviour
                 playerAnim.ResetTrigger("walk");
                 playerAnim.SetTrigger("idle");
                 exit = false;
-                door1.SetActive(true);
-                door2.SetActive(true);
+                //door1.SetActive(true);
+                //door2.SetActive(true);
                 Cncl();
                 gamecanvas.SetActive(false);
-                transform.LookAt(displaybot);
-                OtherService.SetActive(false);
+                transform.LookAt(transfertrans);
+                transform.Rotate(0f, transform.rotation.y, 0f);
+
+                //OtherService.SetActive(false);
             }
             else
             {
@@ -1387,54 +1009,90 @@ public class MainCode : MonoBehaviour
 
     public void clickedservice()
     {
+        if (!IsOwner) return;
         recept = true;
+        display.SetActive(false);
+        loginscreen.SetActive(false);
+        mainmenu.SetActive(false);
+        //balance_screen.SetActive(false);
+        sentmoney.SetActive(false);
+        sendmoneyout.SetActive(false);
+        statement.SetActive(false);
+        pinchangescreen.SetActive(false);
     }
 
     public void clickedexit()
     {
+        if (!IsOwner) return;
         exit = true;
     }
 
     public void movebalance()
     {
+        if (!IsOwner) return;
         balance = true;
     }
 
     public void movewithdraw()
     {
+        if (!IsOwner) return;
         withdraw = true;
     }
 
     public void movestatement()
     {
+        if (!IsOwner) return;
         statements = true;
     }
 
     public void movetransfer()
     {
+        if (!IsOwner) return;
         transfer = true;
     }
     public void movepin()
     {
+        if (!IsOwner) return;
         pin = true;
     }
     
     public void moverest()
     {
+        if (!IsOwner) return;
         rest = true;
+        display.SetActive(false);
+        loginscreen.SetActive(false);
+        mainmenu.SetActive(false);
+        //balance_screen.SetActive(false);
+        sentmoney.SetActive(false);
+        sendmoneyout.SetActive(false);
+        statement.SetActive(false);
+        pinchangescreen.SetActive(false);
+
     }
     
     IEnumerator Delaysecond(int i)
     {
+        
         yield return new WaitForSeconds(i);
         Debug.Log("Waited");
+        display.SetActive(false);
         moverest();
     }
     IEnumerator Delaysecondafter(int i)
     {
+        
         yield return new WaitForSeconds(i);
         Debug.Log("Waited");
         recept = true;
+    }
+
+    IEnumerator outputTimer(int i)
+    {
+        
+        yield return new WaitForSeconds(i+4);
+        output.SetActive(false);
+        display.SetActive(false);
     }
 
 }
